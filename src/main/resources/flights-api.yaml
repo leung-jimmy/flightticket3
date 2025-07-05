@@ -1,0 +1,310 @@
+# OpenAPI 的版本号（使用 3.0.0 是最常见的）
+openapi: 3.0.0
+
+info:
+  title: Flight Ticketing API                # API 的名称
+  description: API for querying and managing flight ticket information.  # API 的描述
+  version: 1.0.0                             # 当前 API 版本
+  contact:                                   # 联系信息（可选）
+    name: Jimmy Leung
+    email: leungjimmy82218@hotmail.com
+
+# 可用的服务器列表（通常设置 API 路径前缀）
+servers:
+  - url: /api                                # API 基础路径，可根据部署环境调整
+    description: Default API server
+
+# 标签：用于在文档界面中分组展示接口
+tags:
+  - name: flights
+    description: Operations about flights    # 航班相关操作
+  - name: bookings
+    description: Operations about ticket bookings  # 预订相关操作
+
+# 所有可调用的 API 接口路径定义
+paths:
+
+  # 获取航班列表的接口
+  /flights:
+    get:
+      tags: [flights]
+      summary: Get list of available flights   # 简要说明
+      description: Retrieve a list of flights based on optional search criteria.
+      parameters:
+        - in: query
+          name: origin                        # 出发地（可选查询参数）
+          schema:
+            type: string
+          description: Departure airport code (e.g. TPE)
+          example: TPE # 添加示例
+        - in: query
+          name: destination                   # 目的地（可选查询参数）
+          schema:
+            type: string
+          description: Arrival airport code (e.g. HKG)
+          example: HKG
+        - in: query
+          name: date                          # 出发日期（可选查询参数）
+          schema:
+            type: string
+            format: date
+          description: Departure date
+          example: '2025-07-01'
+      responses:
+        '200':
+          description: A list of matching flights
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightList'
+        '400': # 客户端请求错误，如请求体格式不正确
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404': # 找不到航班ID
+          description: Flight not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500': # 服务器内部错误
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    # 创建航班的接口
+    post:
+      tags: [ flights ]
+      summary: Add a new flight
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightInput'
+      responses:
+        '201':
+          description: Flight created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightInputStatus'
+        '400': # 客户端请求错误，如请求体格式不正确
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404': # 找不到航班ID
+          description: Flight not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500': # 服务器内部错误
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # 获取某个航班详情
+  /flights/{flightId}:
+    get:
+      tags: [flights]
+      summary: Get flight details
+      parameters:
+        - in: path
+          name: flightId                      # 路径参数：航班 ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detailed info of a specific flight
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Flight'
+        '400': # 客户端请求错误，如请求体格式不正确
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404': # 找不到航班ID
+          description: Flight not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500': # 服务器内部错误
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # 创建预订的接口
+  /bookings:
+    post:
+      tags: [bookings]
+      summary: Book a flight
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingConfirmation'
+        '400': # 客户端请求错误，如请求体格式不正确
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404': # 找不到航班ID
+          description: Flight not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500': # 服务器内部错误
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+# 通用组件定义（如数据结构、响应模板等）
+components:
+  schemas:
+    # 单个航班结构体
+    Flight:
+      type: object
+      properties:
+        id:
+          type: string                       # 航班唯一标识
+          readOnly: true
+        flightNumber:
+          type: string                       # 航班号（如 BR228）
+        origin:
+          type: string                       # 出发地机场代码
+        destination:
+          type: string                       # 到达地机场代码
+        departureTime:
+          type: string
+          format: date-time                  # 起飞时间（ISO 格式）
+        arrivalTime:
+          type: string
+          format: date-time                  # 到达时间
+        price:
+          type: number
+          format: float                      # 机票价格
+
+    # 创建航班结构体
+    FlightInput:
+      type: object
+      required: [flightNumber, origin, destination, departureTime, arrivalTime, price]
+      properties:
+#        id:
+#          type: string                       # 航班唯一标识
+        flightNumber:
+          type: string                       # 航班号（如 BR228）
+        origin:
+          type: string                       # 出发地机场代码
+        destination:
+          type: string                       # 到达地机场代码
+        departureTime:
+          type: string
+          format: date-time                  # 起飞时间（ISO 格式）
+        arrivalTime:
+          type: string
+          format: date-time                  # 到达时间
+        price:
+          type: number
+          format: float                      # 机票价格
+
+    # 航班创建成功响应结构体
+    FlightInputStatus:
+      type: object
+      required: [flightNumber, origin, destination, departureTime, arrivalTime, price, status]
+      properties:
+        id:
+          type: string                       # 航班唯一标识
+          readOnly: true
+        flightNumber:
+          type: string                       # 航班号（如 BR228）
+        origin:
+          type: string                       # 出发地机场代码
+        destination:
+          type: string                       # 到达地机场代码
+        departureTime:
+          type: string
+          format: date-time                  # 起飞时间（ISO 格式）
+        arrivalTime:
+          type: string
+          format: date-time                  # 到达时间
+        price:
+          type: number
+          format: float                      # 机票价格
+        status:
+          type: string
+          enum: [ CONFIRMED, FAILED ]  # 创建状态
+
+    # 航班列表（用于 /flights 的返回结构）
+    FlightList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Flight'
+
+    # 创建预订时的请求体结构
+    BookingRequest:
+      type: object
+      properties:
+        flightId:
+          type: string                       # 要预订的航班 ID
+        passengerName:
+          type: string                       # 乘客姓名
+        contactEmail:
+          type: string                       # 联系邮箱
+          format: email
+
+    # 预订成功的响应结构
+    BookingConfirmation:
+      type: object
+      required: [bookingId, flightId, status]
+      properties:
+        bookingId:
+          type: string                       # 系统生成的预订 ID
+        flightId:
+          type: string                       # 被预订的航班 ID
+        status:
+          type: string
+          enum: [CONFIRMED, PENDING, FAILED]  # 预订状态
+
+    ErrorResponse:
+      type: object
+      required: [ code, message ]
+      properties:
+        code:
+          type: string
+          description: Unique error code
+        message:
+          type: string
+          description: A human-readable error message
+        details:
+          type: array
+          items:
+            type: string
+          description: Additional error details (optional)

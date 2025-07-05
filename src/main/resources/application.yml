@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test_ljm
+    username: postgres
+    password: db760813
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update       # 自动建表，可选值有 none, update, create, create-drop
+    show-sql: true           # 控制台打印 SQL
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  redis:
+    host: localhost
+    port: 6379
