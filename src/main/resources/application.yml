@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/test_ljm
+    url: jdbc:postgresql://localhost:5432/ticketingsystem_ljm
     username: postgres
     password: db760813
     driver-class-name: org.postgresql.Driver
@@ -14,3 +14,10 @@ spring:
   redis:
     host: localhost
     port: 6379
+
+logging:
+  level:
+#    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+#    org.springframework.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: TRACE
+    com.jimmy.flightticket3: DEBUG # Replace with your root package

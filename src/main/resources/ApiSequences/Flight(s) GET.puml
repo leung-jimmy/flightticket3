@@ -1,0 +1,27 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+title Flight(s) GET
+
+actor Users
+boundary FlightsApi
+control FlightsController
+participant FlightsService
+participant FlightsRepository
+database DB
+
+box over FlightsApi,FlightsService:Flights Model
+box over FlightsService,FlightsRepository:Flights Entity
+Users->FlightsApi: Send request with multiple \nparams of a flight/flights
+FlightsApi->FlightsController: Implementor
+FlightsController->FlightsService: Delegator
+FlightsService->FlightsRepository:GET where params = columns
+FlightsRepository->DB: Query
+FlightsRepository<--DB: Return
+FlightsService<--FlightsRepository: Flight entity/entities
+FlightsController<--FlightsService:Flight model(s)
+FlightsApi<--FlightsController:Flight model(s)
+Users<--FlightsApi: Response(201/400/404/500)
+@enduml

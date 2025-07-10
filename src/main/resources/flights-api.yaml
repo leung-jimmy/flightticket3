@@ -32,6 +32,12 @@ paths:
       description: Retrieve a list of flights based on optional search criteria.
       parameters:
         - in: query
+          name: flightNumber                        # 出发地（可选查询参数）
+          schema:
+            type: string
+          description: Flight number (e.g. CA1234)
+          example: CA1234 # 添加示例
+        - in: query
           name: origin                        # 出发地（可选查询参数）
           schema:
             type: string
@@ -44,11 +50,18 @@ paths:
           description: Arrival airport code (e.g. HKG)
           example: HKG
         - in: query
-          name: date                          # 出发日期（可选查询参数）
+          name: departureDate                          # 出发日期（可选查询参数）
           schema:
             type: string
             format: date
           description: Departure date
+          example: '2025-07-01'
+        - in: query
+          name: arrivalDate                          # 到达日期（可选查询参数）
+          schema:
+            type: string
+            format: date
+          description: Arrival date
           example: '2025-07-01'
       responses:
         '200':
@@ -194,7 +207,7 @@ components:
       type: object
       properties:
         id:
-          type: string                       # 航班唯一标识
+          type: integer                       # 航班唯一标识
           readOnly: true
         flightNumber:
           type: string                       # 航班号（如 BR228）
@@ -210,7 +223,7 @@ components:
           format: date-time                  # 到达时间
         price:
           type: number
-          format: float                      # 机票价格
+          format: double                      # 机票价格
 
     # 创建航班结构体
     FlightInput:

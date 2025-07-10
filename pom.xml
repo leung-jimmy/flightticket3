@@ -128,6 +128,7 @@
 							<useJakartaEe>true</useJakartaEe>
 							<interfaceOnly>true</interfaceOnly>
 							<delegatePattern>true</delegatePattern>
+<!--							<basePath>/api</basePath>-->
 						</configOptions>
 					</configuration>
 				</execution>
